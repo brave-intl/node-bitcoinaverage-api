@@ -4,6 +4,12 @@ This repository is a **hard-fork** of [BitcoinAverage NodeJS Client](https://www
 Ideally, it would be a **git-fork**, but the repository for the client isn't visible.
 
 This repository was built in order to be hardened for server deployment.
+There are two big changes:
+first,
+`getResourceForFullUrl` invokes the callback with an `err` parameter;
+and,
+second,
+events for `WebsocketClient` are non-ambiguous.
 
 Enjoy!
 
