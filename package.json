@@ -1,0 +1,59 @@
+{
+  "name": "bat-ledger",
+  "version": "0.1.4",
+  "description": "A server-hardened hard-fork of the BitcoinAverage NodeJS Client",
+  "main": "index.js",
+  "scripts": {
+    "lint": "standard"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brave-intl/node-bitcoinaverage-api.git"
+  },
+  "maintainers": [
+    {
+      "name": "Brave Developers",
+      "email": "support@brave.com"
+    },
+    {
+      "name": "shaun-ba",
+      "email": "shaun@bitcoinaverage.com"
+    }
+  ],
+  "license": "ISC",
+  "keywords": [
+    "bitcoinaverage",
+    "bitcoin",
+    "ethereum",
+    "bitcoin",
+    "price",
+    "bitcoin",
+    "ticker",
+    "bitcoin",
+    "websocket"
+  ],
+  "bugs": {
+    "url": "https://github.com/brave-intl/node-bitcoinaverage-api/issues"
+  },
+  "homepage": "https://github.com/brave-intl/node-bitcoinaverage-api",
+  "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-stage-2": "^6.24.1"
+  },
+  "engines": {
+    "node": "7.10.1",
+    "npm": "4.2.0"
+  },
+  "devDependencies": {
+    "ava": "^0.22.0",
+    "babel-eslint": "^8.0.0",
+    "npm-check-updates": "^2.12.1",
+    "nsp": "^2.8.0",
+    "standard": "10.0.3",
+    "supertest": "^3.0.0",
+    "throng": "4.0.0"
+  },
+  "standard": {
+    "parser": "babel-eslint"
+  }
+}
