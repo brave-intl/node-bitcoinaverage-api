@@ -13,49 +13,79 @@ events for `WebsocketClient` are non-ambiguous.
 
 Enjoy!
 
-## The original README file
-BitcoinAverage NodeJS Client
-============================
+## Example
+If the `dependencies` field in `package.json` includes:
 
-This client enables quick and easy access to our Bitcoin, Ethereum, Litecoin, Ripple and other cryptocurrency exchange rates.
+    "node-bitcoinaverage-api": "brave-intl/node-bitcoinaverage-api",
 
+Then this shows how to do both a restful call (`symbolsGlobal`) and make use of websockets (`connectToTickerWebsocket`):
 
-To install the library, you just need to run the following command:
-
-
-```
-#!node
-
-npm install bitcoinaverage
-```
-
-
-Here we provide you 2 examples - the first example shows how to call function which makes a HTTP request to our Restful [API](https://apiv2.bitcoinaverage.com/) and the other example connects to one of our websockets. You just need to enter your publicKey and secretKey and you are ready to run this example.
-
-
-
-```
-#!node
-
-const ba = require('bitcoinaverage');
-
-var publicKey = 'yourPublicKey';
-var secretKey = 'yourSecretKey';
-
-var restClient = ba.restfulClient(publicKey, secretKey);
-var wsClient = ba.websocketClient(publicKey, secretKey);
-
-
-// Here we log the response received by https://apiv2.bitcoinaverage.com/indices/global/ticker/BTCUSD. For custom usage you just need to implement the Anonimous function and do something else instead of console.log(response);.
-restClient.tickerGlobalPerSymbol('BTCUSD', function(err, response) {
-    if (err) return console.error(err); // new
-    console.log(response);
-});
-
-
-// Here we show an example how to connect to one of our websockets and get periodical update for the Global Price Index for 'BTCUSD'. You can use 'local' instead of 'global', or you can change the crypto-fiat pair to something else (example: ETHEUR), depending on your needs.
-wsClient.connectToTickerWebsocket('global', 'BTCUSD', function(err, response) {
-    if (err) return console.error(err); // new
-    console.log(response);
-});
-```
+    const bitcoinaverage = require('node-bitcoinaverage-api')
+    
+    const altcoins = [ 'BTC' ]
+    const fiats = [ 'USD', 'EUR', 'GBP' ]
+    
+    const eligible = []
+    altcoins.forEach((alt) => {
+      fiats.forEach((fiat) => {
+        eligible.push(alt + fiat)
+      })
+    })
+    
+    const publicKey = '...'
+    const secretKey = '...'
+    
+    const c2s = {
+      1000: 10,     /* normal */
+      1001: 60,     /* going away */
+      1011: 60,     /* unexpected condition */
+      1012: 60,     /* service restart */
+      1013: 300     /* try again later */
+    }
+    
+    bitcoinaverage.restfulClient(publicKey, secretKey).symbolsGlobal((err, result) => {
+      if (err) return console.error(err)
+    
+      const symbols = JSON.parse(result).symbols
+    
+      const pairing = (symbol) => {
+        console.log('pairing ' + symbol)
+    
+        bitcoinaverage.websocketClient(publicKey, secretKey).connectToTickerWebsocket('global', symbol, (tag, type, data) => {
+          const f = {
+            open: () => {
+              if (data.operation === 'subscribe') return console.log(tag + ': subscribed')
+    
+              console.log('unexpected open event ' + tag + ': ' + JSON.stringify(data, null, 2))
+            },
+    
+            message: () => {
+              if (data.event === 'message') return console.log(tag + ': last=' + data.data.last)
+    
+              console.log('unexpected message event ' + tag + ': ' + JSON.stringify(data, null, 2))
+            },
+    
+            error: () => {
+              console.log(tag + ': error code=' + data.code + ' reason=' + data.reason)
+              setTimeout(() => { pairing(symbol) }, (c2s[data.code] || 600) * 1000)
+            },
+    
+            close: () => {
+              console.log('close: ' + tag + ': ' + JSON.stringify(data))
+              setTimeout(() => { pairing(symbol) }, (c2s[data.code] || 600) * 1000 / (data.wasClean ? 2 : 1))
+            },
+    
+            internal: () => {
+              if ((data.type === 'status') && (data.data === 'OK')) return console.log(tag + ': ready')
+    
+              console.log('unexpected internal event ' + tag + ': ' + JSON.stringify(data, null, 2))
+            }
+          }[type]
+          if (f) return f()
+    
+          console.log('unexpected ' + type + ' event ' + tag + ' data=' + JSON.stringify(data, null, 2))
+        })
+      }
+    
+      symbols.forEach((symbol) => { if (eligible.indexOf(symbol) !== -1) pairing(symbol) })
+    })
