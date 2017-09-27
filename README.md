@@ -47,13 +47,15 @@ var wsClient = ba.websocketClient(publicKey, secretKey);
 
 
 // Here we log the response received by https://apiv2.bitcoinaverage.com/indices/global/ticker/BTCUSD. For custom usage you just need to implement the Anonimous function and do something else instead of console.log(response);.
-restClient.tickerGlobalPerSymbol('BTCUSD', function(response) {
+restClient.tickerGlobalPerSymbol('BTCUSD', function(err, response) {
+    if (err) return console.error(err); // new
     console.log(response);
 });
 
 
 // Here we show an example how to connect to one of our websockets and get periodical update for the Global Price Index for 'BTCUSD'. You can use 'local' instead of 'global', or you can change the crypto-fiat pair to something else (example: ETHEUR), depending on your needs.
-wsClient.connectToTickerWebsocket('global', 'BTCUSD', function(response) {
+wsClient.connectToTickerWebsocket('global', 'BTCUSD', function(err, response) {
+    if (err) return console.error(err); // new
     console.log(response);
 });
 ```
